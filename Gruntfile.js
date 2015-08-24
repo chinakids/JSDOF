@@ -15,7 +15,7 @@ module.exports = function (grunt) {
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       coffee: {
-        files: ['<%= config.app %>/scripts/{,*/}*.{coffee,litcoffee,coffee.md}'],
+        files: ['coffee/{,*/}*.{coffee,litcoffee,coffee.md}'],
         tasks: ['coffee:dist']
       },
       gruntfile: {
