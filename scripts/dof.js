@@ -1,10 +1,12 @@
-;;(function(window){
+;;(function(window,$){
 
-  var Dof;
+  var start = function(){
 
-  Dof = {
+  }
+
+  var Dof = {
     option : {
-      test : false,
+      test : true,
   		start : 0.2,
   		end   : 0.8,
   		zoom  : 0.5,
@@ -12,15 +14,14 @@
   		spacing : 20  //px
     },
     init : function(option){
-      var key;
-      for(key in option){
+      for(var key in option){
         this.option[key] = option[key];
       }
-      if(!test){
-
+      if(!this.option.test){
+        start()
       }
     }
   }
 
   window.Dof = Dof;
-})(window)
+})(window,jQuery)
