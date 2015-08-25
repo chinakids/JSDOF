@@ -28,9 +28,6 @@ factory = ($) ->
 
 	window.dof = dof
 
-
-
-
 # 兼容其他模式
 if typeof define is "function" and define.amd
 	# AMD模式
