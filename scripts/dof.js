@@ -1,27 +1,46 @@
-;;(function(window,$){
+(function() {
+  var factory;
 
-  var start = function(){
+  factory = function($) {
+    var dof;
+    dof = (function() {
+      function dof() {
+        this.test = true;
+        this.start = 0.2;
+        this.end = 0.8;
+        this.zoom = 0.5;
+        this.speed = 10;
+        this.spacing = 20;
+      }
 
+      dof.prototype.setOption = function(option) {
+        var key;
+        if (!option) {
+          console.error('setOption传入参数不可为空');
+          return false;
+        }
+        for (key in option) {
+          this[key] = option[key];
+        }
+        if (!this.test) {
+          return this.delay();
+        }
+      };
+
+      dof.prototype.delay = function() {
+        return alert('初始化成功');
+      };
+
+      return dof;
+
+    })();
+    return window.dof = dof;
+  };
+
+  if (typeof define === "function" && define.amd) {
+    define(["jquery"], factory);
+  } else {
+    factory(jQuery);
   }
 
-  var Dof = {
-    option : {
-      test : true,
-  		start : 0.2,
-  		end   : 0.8,
-  		zoom  : 0.5,
-  		speed : 10,   //px/s
-  		spacing : 20  //px
-    },
-    init : function(option){
-      for(var key in option){
-        this.option[key] = option[key];
-      }
-      if(!this.option.test){
-        start()
-      }
-    }
-  }
-
-  window.Dof = Dof;
-})(window,jQuery)
+}).call(this);
