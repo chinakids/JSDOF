@@ -21,6 +21,10 @@ factory = ($) ->
 		delay : () ->
 			alert('初始化成功')
 
+		model : (offset) ->
+
+		layer : () ->
+
 
 	window.dof = dof
 

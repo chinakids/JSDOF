@@ -31,6 +31,10 @@
         return alert('初始化成功');
       };
 
+      dof.prototype.model = function(offset) {};
+
+      dof.prototype.layer = function() {};
+
       return dof;
 
     })();
