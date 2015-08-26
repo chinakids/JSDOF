@@ -6,8 +6,8 @@
     dof = (function() {
       function dof() {
         this.test = true;
-        this.startPoint = 0.2;
-        this.endPoint = 0.8;
+        this.startPoint = 0.1;
+        this.endPoint = 0.9;
         this.zoom = 0.5;
         this.speed = 10;
         this.spacing = 20;
@@ -45,35 +45,86 @@
           'width': this.cacheData.ww,
           'height': this.cacheData.wh
         });
-        return this.layer();
+        this.layer();
+        return this.addEvent();
       };
 
-      dof.prototype.model = function(Moffset) {
-        var Poffset, Xtan, ytan, _ref, _ref1;
+      dof.prototype.model = function(Moffset, element, status, callback) {
+        var deepinSize, xtan, ytan;
+        callback = callback || function() {};
+        xtan = Moffset.left / this.cacheData.zAxis;
+        ytan = Moffset.top / this.cacheData.zAxis;
+        deepinSize = this.cacheData.zAxis * this.startPoint + (element.attr('dof-deepin') * this.spacing);
+        if (status === 'move') {
+          return element.css({
+            'left': deepinSize * xtan,
+            'top': deepinSize * ytan
+          });
+        } else {
+          return element.animate({
+            'left': deepinSize * xtan,
+            'top': deepinSize * ytan
+          }, 100, callback);
+        }
+      };
+
+      dof.prototype.layer = function() {
+        var that, xtan;
+        that = this;
+        xtan = (this.cacheData.ww / 2) / this.cacheData.zAxis;
+        return $(this.mainDom).find(this.layerDom).each(function() {
+          var deepin, deepinSize, zoom;
+          deepin = $(this).attr('dof-deepin');
+          deepinSize = that.cacheData.zAxis * that.startPoint + (deepin * that.spacing);
+          zoom = parseInt((deepinSize * xtan) / (that.cacheData.ww / 2) * 100) / 100;
+          $(this).attr('zoom', zoom);
+          $(this).css({
+            'zIndex': deepin * 100,
+            'transform': 'scale(' + zoom + ',' + zoom + ')'
+          });
+        });
+      };
+
+      dof.prototype.updataLayer = function(Moffset, status, callback) {
+        var that;
         if (Moffset == null) {
           Moffset = {
             left: 0,
             top: 0
           };
         }
-        Poffset = {
-          left: (_ref = offset.left > this.cacheData.ww / 2) != null ? _ref : offset.left - this.cacheData.ww / {
-            2: this.cacheData.ww / 2 - offset.left
-          },
-          top: (_ref1 = offset.top > this.cacheData.wh / 2) != null ? _ref1 : offset.top - this.cacheData.wh / {
-            2: this.cacheData.wh / 2 - offset.top
-          }
-        };
-        Xtan = Poffset.left / this.cacheData.zAxis;
-        return ytan = Poffset.top / this.cacheData.zAxis;
+        if (status == null) {
+          status = 'move';
+        }
+        that = this;
+        return $(this.mainDom).find(this.layerDom).each(function() {
+          return that.model(Moffset, $(this), status, callback);
+        });
       };
 
-      dof.prototype.layer = function() {
-        return $(this.mainDom).find(this.layerDom).each(function() {
-          var deepin;
-          deepin = $(this).attr('dof-deepin');
-          console.log(deepin);
-          $(this).attr('style', 'zindex:' + deepin * 100);
+      dof.prototype.addEvent = function() {
+        var onmove, that;
+        that = this;
+        onmove = function() {
+          $(document).unbind('mousemove');
+          return $(document).mousemove(function(e) {
+            var Moffset;
+            console.log(e.pageX + ',' + e.pageY);
+            Moffset = {
+              left: that.cacheData.ww / 2 - e.pageX,
+              top: that.cacheData.wh / 2 - e.pageY
+            };
+            return that.updataLayer(Moffset);
+          });
+        };
+        return $(document).mouseover(function(e) {
+          var Moffset;
+          Moffset = {
+            left: that.cacheData.ww / 2 - e.pageX,
+            top: that.cacheData.wh / 2 - e.pageY
+          };
+          that.updataLayer(Moffset, 'over', onmove);
+          return $(document).unbind('mouseover');
         });
       };
 

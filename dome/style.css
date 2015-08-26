@@ -65,29 +65,61 @@ h1,h2,h3,h4,h5,h6{
   line-height: 100px;
   text-align: center;
   border: 1px solid #000;
+  top:50%;
+  left: 50%;
+  margin-top: -50px;
+  margin-left: -50px;
 }
 .layer1 .box{
-  top: 10px;
-  left: 10px;
+  /*top: 10px;
+  left: 10px;*/
   background-color: red;
 }
 .layer2 .box{
-  top: 70px;
-  left: 70px;
+  /*top: 70px;
+  left: 70px;*/
   background-color: green;
 }
 .layer3 .box{
-  top: 130px;
-  left:130px;
+  /*top: 130px;
+  left:130px;*/
   background-color: blue;
 }
 .layer4 .box{
-  top:190px;
-  left:190px;
+  /*top:190px;
+  left:190px;*/
   background-color: orange;
 }
 .layer5 .box{
-  top:250px;
-  left:250px;
+  /*top:250px;
+  left:250px;*/
   background-color: white;
+}
+.box.one{
+  left: 0;
+  top: 0;
+  right: auto;
+  bottom: auto;
+  margin: 0;
+}
+.box.two{
+  left: auto;
+  top: 0;
+  right: 0;
+  bottom: auto;
+  margin: 0;
+}
+.box.three{
+  left: auto;
+  top: auto;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+}
+.box.four{
+  left: 0;
+  top: auto;
+  right: auto;
+  bottom: 0;
+  margin: 0;
 }

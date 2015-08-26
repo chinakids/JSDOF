@@ -2,8 +2,8 @@ factory = ($) ->
 	class dof
 		constructor: ->
 			@test = true
-			@startPoint = 0.2
-			@endPoint = 0.8
+			@startPoint = 0.1
+			@endPoint = 0.9
 			@zoom = 0.5
 			@speed = 10   #px/s
 			@spacing = 20  #px
@@ -34,20 +34,74 @@ factory = ($) ->
 				'height': @cacheData.wh
 
 			@layer()
+			@addEvent()
 
-		model : (Moffset = {left:0,top:0}) ->
-			Poffset =
-				left : offset.left > @cacheData.ww/2 ? offset.left - @cacheData.ww/2 : @cacheData.ww/2 - offset.left
-				top : offset.top > @cacheData.wh/2 ? offset.top - @cacheData.wh/2 : @cacheData.wh/2 - offset.top
-			Xtan = Poffset.left/@cacheData.zAxis
-			ytan = Poffset.top/@cacheData.zAxis
+		model : (Moffset,element,status,callback) ->
+			callback = callback or ()->
+			# Poffset =
+			# 	left : if (Moffset.left > @cacheData.ww/2) then (Moffset.left - @cacheData.ww/2) else (@cacheData.ww/2 - Moffset.left)
+			# 	top : if (Moffset.top > @cacheData.wh/2) then (Moffset.top - @cacheData.wh/2) else (@cacheData.wh/2 - Moffset.top)
+			# console.log Poffset
+			xtan = Moffset.left/@cacheData.zAxis
+			ytan = Moffset.top/@cacheData.zAxis
+			deepinSize = @cacheData.zAxis*@startPoint + (element.attr('dof-deepin') * @spacing)
+			if status is 'move'
+				element.css
+					'left' : (deepinSize * xtan)
+					'top' : (deepinSize * ytan)
+			else
+				element.animate
+					'left' : (deepinSize * xtan)
+					'top' : (deepinSize * ytan)
+					,100,callback
+
 
 		layer : () ->
+			that = @
+			xtan = (@cacheData.ww / 2) / @cacheData.zAxis
 			$(@mainDom).find(@layerDom).each () ->
 				deepin = $(@).attr('dof-deepin')
-				console.log deepin
-				$(@).attr 'style','zindex:'+deepin * 100
+				deepinSize = that.cacheData.zAxis*that.startPoint + (deepin * that.spacing)
+				#$(@).attr 'style','zindex:'+deepin * 100
+				zoom = parseInt((deepinSize * xtan)/(that.cacheData.ww/2)*100)/100
+				$(@).attr 'zoom',zoom
+				$(@).css
+					'zIndex': deepin * 100
+					'transform':'scale('+zoom+','+zoom+')'
+				#计算缩放
 				return
+
+		updataLayer : (Moffset = {left:0,top:0},status = 'move',callback)->
+			that = @
+			$(@mainDom).find(@layerDom).each () ->
+				that.model Moffset,$(@),status,callback
+
+		addEvent : () ->
+			that = @
+
+			onmove = () ->
+				$(document).unbind 'mousemove'
+				$(document).mousemove (e)->
+					console.log e.pageX+','+e.pageY
+					Moffset =
+						left : that.cacheData.ww/2 - e.pageX
+						top : that.cacheData.wh/2 - e.pageY
+					that.updataLayer(Moffset)
+
+			$(document).mouseover (e)->
+				Moffset =
+					left : that.cacheData.ww/2 - e.pageX
+					top : that.cacheData.wh/2 - e.pageY
+				that.updataLayer(Moffset,'over',onmove)
+				$(document).unbind 'mouseover'
+
+			#
+			# $(document).mouseout (e)->
+			# 	console.log '离开'
+			# 	Moffset =
+			# 		left : 0
+			# 		top : 0
+			# 	that.updataLayer(Moffset,'out',offmove)
 
 
 	window.dof = dof
