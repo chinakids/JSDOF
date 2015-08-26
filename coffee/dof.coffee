@@ -4,7 +4,6 @@ factory = ($) ->
 			@test = true
 			@startPoint = 0.1
 			@endPoint = 0.9
-			@zoom = 0.5
 			@speed = 10   #px/s
 			@spacing = 20  #px
 			@mainDom = '.dof'

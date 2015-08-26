@@ -8,7 +8,6 @@
         this.test = true;
         this.startPoint = 0.1;
         this.endPoint = 0.9;
-        this.zoom = 0.5;
         this.speed = 10;
         this.spacing = 20;
         this.mainDom = '.dof';
