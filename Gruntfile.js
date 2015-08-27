@@ -11,18 +11,28 @@ module.exports = function (grunt) {
 
   // Define the configuration for all the tasks
   grunt.initConfig({
-
+    pkg: grunt.file.readJSON('package.json'),
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       coffee: {
         files: ['coffee/{,*/}*.{coffee,litcoffee,coffee.md}'],
-        tasks: ['coffee:dist']
+        tasks: ['coffee:dist','uglify']
       },
       gruntfile: {
         files: ['Gruntfile.js']
       }
     },
-
+    uglify: {
+      min:{
+        options: {
+          banner: '/*!\n * <%= pkg.name %> - compressed JS  - v<%= pkg.version %> (<%= grunt.template.today("yyyy-mm-dd HH:MM") %>)\n */\n',
+          sourceMap: true
+        },
+        files: {
+          'dest/dof.min.js': ['scripts/dof.js']
+        }
+      }
+    },
     // Compiles CoffeeScript to JavaScript
     coffee: {
       dist: {
@@ -41,6 +51,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('default', [
     'coffee:dist',
+    'uglify',
     'watch'
   ]);
 };
