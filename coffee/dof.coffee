@@ -61,7 +61,6 @@ factory = ($) ->
       $(@mainDom).find(@layerDom).each () ->
         deepin = $(@).attr('dof-deepin')
         deepinSize = that.cacheData.zAxis*that.startPoint + (deepin * that.spacing)
-        #$(@).attr 'style','zindex:'+deepin * 100
         zoom = parseInt((deepinSize * xtan)/(that.cacheData.ww/2)*100)/100
         $(@).attr 'zoom',zoom
         $(@).css
@@ -93,14 +92,6 @@ factory = ($) ->
           top : that.cacheData.wh/2 - e.pageY
         that.updataLayer(Moffset,'over',onmove)
         $(document).unbind 'mouseover'
-
-      #
-      # $(document).mouseout (e)->
-      #   console.log '离开'
-      #   Moffset =
-      #     left : 0
-      #     top : 0
-      #   that.updataLayer(Moffset,'out',offmove)
 
 
   window.dof = dof
