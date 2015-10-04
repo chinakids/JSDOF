@@ -1,3 +1,8 @@
+#
+#    name:景深效果
+#    desc:页面分层 根据鼠标移动模拟景深视觉效果
+#
+
 factory = ($) ->
   class dof
     constructor: ->
