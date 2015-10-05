@@ -25,14 +25,16 @@ factory = ($) ->
 
 
     delay : () ->
+      WINDOW_W = $(window).width()
+      WINDOW_H = $(window).height()
       zAxis = ($(@mainDom).find(@layerDom).size() * @spacing)/(@endPoint - @startPoint)
       @cacheData =
-        ww    : $(window).width()
-        wh    : $(window).height()
+        ww    : WINDOW_W
+        wh    : WINDOW_h
         zAxis : zAxis
       @initPonit =
-        x    : $(window).width()/2
-        y    : $(window).height()/2
+        x    : WINDOW_W/2
+        y    : WINDOW_H/2
       $(@mainDom).css
         'width' : @cacheData.ww
         'height': @cacheData.wh
