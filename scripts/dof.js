@@ -4,90 +4,109 @@
   factory = function($) {
     var dof;
     dof = (function() {
-      function dof() {
-        this.test = true;
-        this.startPoint = 0.1;
-        this.endPoint = 0.9;
-        this.speed = 10;
-        this.spacing = 20;
-        this.mainDom = '.dof';
-        this.layerDom = '.dof-layer';
-      }
-
-      dof.prototype.setOption = function(option) {
-        var key;
-        if (!option) {
-          console.error('setOption传入参数不可为空');
+      function dof(option) {
+        var extend;
+        this.W = $(window).width();
+        this.H = $(window).height();
+        this.maxZindex = 90000;
+        this.cfg = {
+          test: true,
+          zPoint: {
+            start: 0.1,
+            end: 0.9
+          },
+          speed: 0.1,
+          deepin: 20,
+          mainDom: '.dof',
+          layerDom: '.dof-layer'
+        };
+        if (typeof option !== 'object') {
+          console.error('option传入参数不可为Object以外类型');
           return false;
         }
-        for (key in option) {
-          this[key] = option[key];
+        extend = function(oldObj, newObj) {
+          var key, _results;
+          _results = [];
+          for (key in newObj) {
+            if (typeof oldObj[key] !== 'object') {
+              _results.push(oldObj[key] = newObj[key]);
+            } else {
+              _results.push(extend(oldObj[key], newObj[key]));
+            }
+          }
+          return _results;
+        };
+        extend(this.cfg, option);
+        if (!this.cfg.test) {
+          this.delay();
         }
-        if (!this.test) {
-          return this.delay();
-        }
-      };
+      }
 
       dof.prototype.delay = function() {
-        var zAxis;
-        zAxis = ($(this.mainDom).find(this.layerDom).size() * this.spacing) / (this.endPoint - this.startPoint);
-        this.cacheData = {
-          ww: $(window).width(),
-          wh: $(window).height(),
-          zAxis: zAxis
+        this.zAxis = ($(this.cfg.mainDom).find(this.cfg.layerDom).size() * this.cfg.deepin) / (this.cfg.zPoint.end - this.cfg.zPoint.start);
+        this.centerPonit = {
+          x: this.W / 2,
+          y: this.H / 2
         };
-        this.initPonit = {
-          x: $(window).width() / 2,
-          y: $(window).height() / 2
-        };
-        $(this.mainDom).css({
-          'width': this.cacheData.ww,
-          'height': this.cacheData.wh
-        });
+        this.updataCss();
         this.layer();
-        return this.addEvent();
+        return this.createEventLayer();
       };
 
-      dof.prototype.model = function(Moffset, element, status, callback) {
+      dof.prototype.updataCss = function() {
+        $(this.cfg.mainDom).css({
+          'width': this.W,
+          'height': this.H,
+          'overflow': 'hidden',
+          'position': 'relative'
+        });
+        return $('head').append('<style id="dof-style">' + this.cfg.layerDom + ',#dof-event{ -webkit-user-select:none; -ms-user-select:none; -o-user-select:none; user-select:none; } #dof-event{ width: 100%; height: 100%; position: absolute; left: 0; top: 0; z-index: ' + this.maxZindex + '} </style>');
+      };
+
+      dof.prototype.model = function(mOffset, element, status, callback) {
         var deepinSize, xtan, ytan;
         callback = callback || function() {};
-        xtan = Moffset.left / this.cacheData.zAxis;
-        ytan = Moffset.top / this.cacheData.zAxis;
-        deepinSize = this.cacheData.zAxis * this.startPoint + (element.attr('dof-deepin') * this.spacing);
+        xtan = mOffset.left / this.zAxis;
+        ytan = mOffset.top / this.zAxis;
+        deepinSize = this.zAxis * this.cfg.zPoint.start + (element.attr('dof-deepin') * this.cfg.deepin);
         if (status === 'move') {
           return element.css({
-            'left': deepinSize * xtan,
-            'top': deepinSize * ytan
+            'left': (deepinSize * xtan) * this.cfg.speed,
+            'top': (deepinSize * ytan) * this.cfg.speed
           });
         } else {
           return element.animate({
-            'left': deepinSize * xtan,
-            'top': deepinSize * ytan
-          }, 100, callback);
+            'left': (deepinSize * xtan) * this.cfg.speed,
+            'top': (deepinSize * ytan) * this.cfg.speed
+          }, 200, callback);
         }
       };
 
       dof.prototype.layer = function() {
-        var that, xtan;
-        that = this;
-        xtan = (this.cacheData.ww / 2) / this.cacheData.zAxis;
-        return $(this.mainDom).find(this.layerDom).each(function() {
+        var self;
+        self = this;
+        return $(this.cfg.mainDom).find(this.cfg.layerDom).each(function() {
           var deepin, deepinSize, zoom;
           deepin = $(this).attr('dof-deepin');
-          deepinSize = that.cacheData.zAxis * that.startPoint + (deepin * that.spacing);
-          zoom = parseInt((deepinSize * xtan) / (that.cacheData.ww / 2) * 100) / 100;
+          deepinSize = self.zAxis - (self.zAxis * self.cfg.zPoint.start + ((deepin - 1) * self.cfg.deepin));
+          zoom = parseInt((deepinSize / self.zAxis) * 10000) / 10000;
           $(this).attr('zoom', zoom);
           $(this).css({
-            'zIndex': deepin * 100,
-            'transform': 'scale(' + zoom + ',' + zoom + ')'
+            'zIndex': self.maxZindex - (deepin * 100),
+            'transform': 'scale(' + zoom + ',' + zoom + ')',
+            'width': '100%',
+            'height': '100%',
+            'position': 'absolute',
+            'left': 0,
+            'top': 0
           });
         });
       };
 
-      dof.prototype.updataLayer = function(Moffset, status, callback) {
-        var that;
-        if (Moffset == null) {
-          Moffset = {
+      dof.prototype.updataLayer = function(mOffset, status, callback) {
+        var self;
+        if (mOffset == null) {
+          mOffset = {
             left: 0,
             top: 0
           };
@@ -95,35 +114,49 @@
         if (status == null) {
           status = 'move';
         }
-        that = this;
-        return $(this.mainDom).find(this.layerDom).each(function() {
-          return that.model(Moffset, $(this), status, callback);
+        self = this;
+        return $(this.cfg.mainDom).find(this.cfg.layerDom).each(function() {
+          return self.model(mOffset, $(this), status, callback);
         });
       };
 
+      dof.prototype.createEventLayer = function() {
+        $(this.cfg.mainDom).append('<div id="dof-event"></div>');
+        return this.addEvent();
+      };
+
       dof.prototype.addEvent = function() {
-        var onmove, that;
-        that = this;
+        var onmove, self;
+        self = this;
         onmove = function() {
-          $(document).unbind('mousemove');
-          return $(document).mousemove(function(e) {
-            var Moffset;
-            console.log(e.pageX + ',' + e.pageY);
-            Moffset = {
-              left: that.cacheData.ww / 2 - e.pageX,
-              top: that.cacheData.wh / 2 - e.pageY
+          $('#dof-event').unbind('mousemove');
+          return $('#dof-event').mousemove(function(e) {
+            var mOffset;
+            mOffset = {
+              left: self.centerPonit.x - e.pageX,
+              top: self.centerPonit.y - e.pageY
             };
-            return that.updataLayer(Moffset);
+            return self.updataLayer(mOffset);
           });
         };
-        return $(document).mouseover(function(e) {
-          var Moffset;
-          Moffset = {
-            left: that.cacheData.ww / 2 - e.pageX,
-            top: that.cacheData.wh / 2 - e.pageY
+        $('#dof-event').mouseover(function(e) {
+          var mOffset;
+          mOffset = {
+            left: self.centerPonit.x - e.pageX,
+            top: self.centerPonit.y - e.pageY
           };
-          that.updataLayer(Moffset, 'over', onmove);
+          self.updataLayer(mOffset, 'over', onmove);
           return $(document).unbind('mouseover');
+        });
+        return $('#dof-event').mouseout(function(e) {
+          var mOffset;
+          console.log('移除');
+          mOffset = {
+            left: 0,
+            top: 0
+          };
+          self.updataLayer(mOffset, 'out', onmove);
+          return $(document).unbind('mouseout');
         });
       };
 
