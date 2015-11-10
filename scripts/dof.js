@@ -11,6 +11,7 @@
         this.maxZindex = 90000;
         this.cfg = {
           test: true,
+          zoom: true,
           zPoint: {
             start: 0.1,
             end: 0.9
@@ -89,7 +90,7 @@
           var deepin, deepinSize, zoom;
           deepin = $(this).attr('dof-deepin');
           deepinSize = self.zAxis - (self.zAxis * self.cfg.zPoint.start + ((deepin - 1) * self.cfg.deepin));
-          zoom = parseInt((deepinSize / self.zAxis) * 10000) / 10000;
+          zoom = self.cfg.zoom ? parseInt((deepinSize / self.zAxis) * 10000) / 10000 : 1;
           $(this).attr('zoom', zoom);
           $(this).css({
             'zIndex': self.maxZindex - (deepin * 100),
@@ -150,7 +151,6 @@
         });
         return $('#dof-event').mouseout(function(e) {
           var mOffset;
-          console.log('移除');
           mOffset = {
             left: 0,
             top: 0
