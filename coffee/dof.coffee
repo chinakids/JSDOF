@@ -1,114 +1,166 @@
+#
+#    name:景深效果
+#    desc:页面分层 根据鼠标移动模拟景深视觉效果
+#
+
 factory = ($) ->
-	class dof
-		constructor: ->
-			@test = true
-			@startPoint = 0.1
-			@endPoint = 0.9
-			@speed = 10   #px/s
-			@spacing = 20  #px
-			@mainDom = '.dof'
-			@layerDom = '.dof-layer'
+  class dof
+    #构造器
+    constructor: (option) ->
+      @W = $(window).width()
+      @H = $(window).height()
+      @maxZindex = 90000
+      #默认数据
+      @cfg =
+        test : true
+        zPoint:
+          start : 0.1
+          end : 0.9
+        speed : 0.1   #speed zoom  一般小于1，以1/2屏幕宽为基准
+        deepin : 20  #px
+        mainDom : '.dof'
+        layerDom : '.dof-layer'
+      #参数初始化
+      unless typeof(option) is 'object'
+        console.error 'option传入参数不可为Object以外类型'
+        return false
+      extend = (oldObj,newObj) ->
+        for key of newObj
+          if typeof(oldObj[key]) isnt 'object'
+            oldObj[key] = newObj[key]
+          else
+            extend(oldObj[key],newObj[key])
+      extend(@cfg,option)
+      unless @cfg.test
+        @delay()
 
-		setOption : (option) ->
-			unless option
-				console.error 'setOption传入参数不可为空'
-				return false
-			for key of option
-				@[key] = option[key]
-			unless @test
-				@delay()
+    #初始函数
+    delay : () ->
+      #首先 计算z轴长度,存入构造器
+      @zAxis = ($(@cfg.mainDom).find(@cfg.layerDom).size() * @cfg.deepin)/(@cfg.zPoint.end - @cfg.zPoint.start)
+      #中心点坐标
+      @centerPonit =
+        x    : @W/2
+        y    : @H/2
+      #初始化dom容器
+      @updataCss()
+      #构建层
+      @layer()
+      #创建事件层
+      @createEventLayer()
 
+    #初始化css
+    updataCss : () ->
+      $(@cfg.mainDom).css
+        'width' : @W
+        'height': @H
+        'overflow':'hidden' #溢出裁剪
+        'position':'relative'
+      $('head').append('
+            <style id="dof-style">
+              '+@cfg.layerDom+',#dof-event{
+                -webkit-user-select:none;
+                -ms-user-select:none;
+                -o-user-select:none;
+                user-select:none;
+              }
+              #dof-event{
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: '+@maxZindex+'
+              }
+            </style>')
 
-		delay : () ->
-			zAxis = ($(@mainDom).find(@layerDom).size() * @spacing)/(@endPoint - @startPoint)
-			@cacheData =
-				ww    : $(window).width()
-				wh    : $(window).height()
-				zAxis : zAxis
-			@initPonit =
-				x    : $(window).width()/2
-				y    : $(window).height()/2
-			$(@mainDom).css
-				'width' : @cacheData.ww
-				'height': @cacheData.wh
+    #dof计算模型
+    model : (mOffset,element,status,callback) ->
+      callback = callback or ()->
+      xtan = mOffset.left/@zAxis
+      ytan = mOffset.top/@zAxis
+      deepinSize = @zAxis*@cfg.zPoint.start + (element.attr('dof-deepin') * @cfg.deepin)
 
-			@layer()
-			@addEvent()
+      if status is 'move'
+        element.css
+          'left' : (deepinSize * xtan) * @cfg.speed
+          'top' : (deepinSize * ytan) * @cfg.speed
+      else
+        element.animate
+          'left' : (deepinSize * xtan) * @cfg.speed
+          'top' : (deepinSize * ytan) * @cfg.speed
+          ,200,callback
 
-		model : (Moffset,element,status,callback) ->
-			callback = callback or ()->
-			# Poffset =
-			# 	left : if (Moffset.left > @cacheData.ww/2) then (Moffset.left - @cacheData.ww/2) else (@cacheData.ww/2 - Moffset.left)
-			# 	top : if (Moffset.top > @cacheData.wh/2) then (Moffset.top - @cacheData.wh/2) else (@cacheData.wh/2 - Moffset.top)
-			# console.log Poffset
-			xtan = Moffset.left/@cacheData.zAxis
-			ytan = Moffset.top/@cacheData.zAxis
-			deepinSize = @cacheData.zAxis*@startPoint + (element.attr('dof-deepin') * @spacing)
-			if status is 'move'
-				element.css
-					'left' : (deepinSize * xtan)
-					'top' : (deepinSize * ytan)
-			else
-				element.animate
-					'left' : (deepinSize * xtan)
-					'top' : (deepinSize * ytan)
-					,100,callback
+    #层模型
+    layer : () ->
+      self = @
+      #递归层dom设置景深缩放
+      $(@cfg.mainDom).find(@cfg.layerDom).each () ->
+        deepin = $(this).attr('dof-deepin')
 
+        deepinSize = self.zAxis-(self.zAxis * self.cfg.zPoint.start + ((deepin - 1) * self.cfg.deepin))
 
-		layer : () ->
-			that = @
-			xtan = (@cacheData.ww / 2) / @cacheData.zAxis
-			$(@mainDom).find(@layerDom).each () ->
-				deepin = $(@).attr('dof-deepin')
-				deepinSize = that.cacheData.zAxis*that.startPoint + (deepin * that.spacing)
-				#$(@).attr 'style','zindex:'+deepin * 100
-				zoom = parseInt((deepinSize * xtan)/(that.cacheData.ww/2)*100)/100
-				$(@).attr 'zoom',zoom
-				$(@).css
-					'zIndex': deepin * 100
-					'transform':'scale('+zoom+','+zoom+')'
-				#计算缩放
-				return
+        zoom = parseInt((deepinSize/self.zAxis)*10000)/10000
+        $(this).attr 'zoom',zoom
+        $(this).css
+          'zIndex': self.maxZindex - (deepin * 100)
+          'transform':'scale('+zoom+','+zoom+')'
+          'width': '100%'
+          'height': '100%'
+          'position': 'absolute'
+          'left': 0;
+          'top': 0;
+        #计算缩放
+        return
 
-		updataLayer : (Moffset = {left:0,top:0},status = 'move',callback)->
-			that = @
-			$(@mainDom).find(@layerDom).each () ->
-				that.model Moffset,$(@),status,callback
+    #更新层方法
+    updataLayer : (mOffset = {left:0,top:0},status = 'move',callback) ->
+      self = @
+      #递归更新层
+      $(@cfg.mainDom).find(@cfg.layerDom).each () ->
+        self.model mOffset,$(this),status,callback
 
-		addEvent : () ->
-			that = @
+    #创建事件层
+    createEventLayer : () ->
+      $(@cfg.mainDom).append('<div id="dof-event"></div>')
+      @addEvent()
 
-			onmove = () ->
-				$(document).unbind 'mousemove'
-				$(document).mousemove (e)->
-					console.log e.pageX+','+e.pageY
-					Moffset =
-						left : that.cacheData.ww/2 - e.pageX
-						top : that.cacheData.wh/2 - e.pageY
-					that.updataLayer(Moffset)
+    #事件绑定
+    addEvent : () ->
+      self = @
+      #鼠标移动更新
+      onmove = () ->
+        $('#dof-event').unbind 'mousemove'
+        $('#dof-event').mousemove (e)->
+          #console.log e.pageX+','+e.pageY
+          mOffset =
+            left : self.centerPonit.x - e.pageX
+            top : self.centerPonit.y - e.pageY
+          self.updataLayer(mOffset)
+      # onmove()
+      #鼠标移入更新
+      $('#dof-event').mouseover (e)->
+        mOffset =
+          left : self.centerPonit.x - e.pageX
+          top : self.centerPonit.y - e.pageY
+        self.updataLayer(mOffset,'over',onmove)
+        $(document).unbind 'mouseover'
 
-			$(document).mouseover (e)->
-				Moffset =
-					left : that.cacheData.ww/2 - e.pageX
-					top : that.cacheData.wh/2 - e.pageY
-				that.updataLayer(Moffset,'over',onmove)
-				$(document).unbind 'mouseover'
+      $('#dof-event').mouseout (e)->
+        console.log '移除'
+        mOffset =
+          left : 0
+          top : 0
+        self.updataLayer(mOffset,'out',onmove)
+        $(document).unbind 'mouseout'
 
-			#
-			# $(document).mouseout (e)->
-			# 	console.log '离开'
-			# 	Moffset =
-			# 		left : 0
-			# 		top : 0
-			# 	that.updataLayer(Moffset,'out',offmove)
-
-
-	window.dof = dof
+  #挂载到全局
+  window.dof = dof
 
 # 兼容其他模式
-if typeof define is "function" and define.amd
-	# AMD模式
-	define [ "jquery" ], factory
+if typeof(define) is "function" and define.amd
+  # AMD模式
+  define [ "jquery" ], factory
 else
-	# 全局模式
-	factory jQuery
+  # 全局模式
+  factory jQuery
