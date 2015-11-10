@@ -13,6 +13,7 @@ factory = ($) ->
       #默认数据
       @cfg =
         test : true
+        zoom : true
         zPoint:
           start : 0.1
           end : 0.9
@@ -100,7 +101,7 @@ factory = ($) ->
 
         deepinSize = self.zAxis-(self.zAxis * self.cfg.zPoint.start + ((deepin - 1) * self.cfg.deepin))
 
-        zoom = parseInt((deepinSize/self.zAxis)*10000)/10000
+        zoom = if self.cfg.zoom then parseInt((deepinSize/self.zAxis)*10000)/10000 else 1
         $(this).attr 'zoom',zoom
         $(this).css
           'zIndex': self.maxZindex - (deepin * 100)
@@ -147,7 +148,6 @@ factory = ($) ->
         $(document).unbind 'mouseover'
 
       $('#dof-event').mouseout (e)->
-        console.log '移除'
         mOffset =
           left : 0
           top : 0
