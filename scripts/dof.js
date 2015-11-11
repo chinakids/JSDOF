@@ -18,6 +18,7 @@
           },
           speed: 0.1,
           deepin: 20,
+          size: 1600 / 932,
           mainDom: '.dof',
           layerDom: '.dof-layer'
         };
@@ -55,13 +56,24 @@
       };
 
       dof.prototype.updataCss = function() {
+        var bgSize, self;
+        self = this;
         $(this.cfg.mainDom).css({
-          'width': this.W,
-          'height': this.H,
+          'width': this.W + 50,
+          'height': this.H + 30,
           'overflow': 'hidden',
-          'position': 'relative'
+          'position': 'relative',
+          'marginTop': '-15px',
+          'marginLeft': '-25px'
         });
-        return $('head').append('<style id="dof-style">' + this.cfg.layerDom + ',#dof-event{ -webkit-user-select:none; -ms-user-select:none; -o-user-select:none; user-select:none; } #dof-event{ width: 100%; height: 100%; position: absolute; left: 0; top: 0; z-index: ' + this.maxZindex + '} </style>');
+        bgSize = function() {
+          if (self.W / self.H >= self.cfg.size) {
+            return 'background-size: 100% auto;';
+          } else {
+            return 'background-size: auto 100%;';
+          }
+        };
+        return $('head').append('<style id="dof-style">' + this.cfg.layerDom + ',#dof-event{ -webkit-user-select:none; -ms-user-select:none; -o-user-select:none; user-select:none; }' + this.cfg.layerDom + ',' + this.cfg.mainDom + '{' + bgSize() + '} #dof-event{ width: 100%; height: 100%; position: absolute; left: 0; top: 0; z-index: ' + this.maxZindex + '} </style>');
       };
 
       dof.prototype.model = function(mOffset, element, status, callback) {
