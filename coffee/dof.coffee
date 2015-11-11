@@ -19,6 +19,7 @@ factory = ($) ->
           end : 0.9
         speed : 0.1   #speed zoom  一般小于1，以1/2屏幕宽为基准
         deepin : 20  #px
+        size : 1600/932   #宽高比
         mainDom : '.dof'
         layerDom : '.dof-layer'
       #参数初始化
@@ -52,11 +53,21 @@ factory = ($) ->
 
     #初始化css
     updataCss : () ->
+      self = @
       $(@cfg.mainDom).css
-        'width' : @W
-        'height': @H
+        'width' : @W+50
+        'height': @H+30
         'overflow':'hidden' #溢出裁剪
         'position':'relative'
+        'marginTop':'-15px'
+        'marginLeft':'-25px'
+
+      bgSize = () ->
+        if self.W/self.H >= self.cfg.size
+          return 'background-size: 100% auto;'
+        else
+          return 'background-size: auto 100%;'
+
       $('head').append('
             <style id="dof-style">
               '+@cfg.layerDom+',#dof-event{
@@ -64,6 +75,9 @@ factory = ($) ->
                 -ms-user-select:none;
                 -o-user-select:none;
                 user-select:none;
+              }
+              '+@cfg.layerDom+','+@cfg.mainDom+'{
+                '+bgSize()+'
               }
               #dof-event{
                 width: 100%;

@@ -41,13 +41,14 @@ h1,h2,h3,h4,h5,h6{
  * dome - main
  */
 .dof{
-  width: 100%;
-  height: 100%;
+  width: 110%;
+  height: 110%;
   position: relative;
+  background:url(images/bg.png) 0 bottom no-repeat;
 }
 .dof-layer{
-  width: 100%;
-  height: 100%;
+  width: 110%;
+  height: 110%;
   position: absolute;
   left: 0;
   top: 0;
@@ -55,45 +56,30 @@ h1,h2,h3,h4,h5,h6{
 /**
  * main-test
  */
- .dof-layer{
-   background-color: rgba(0, 0, 0, 0.1);
- }
-.layer1 .box,.layer2 .box,.layer3 .box,.layer4 .box,.layer5 .box{
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  line-height: 100px;
-  text-align: center;
-  border: 1px solid #000;
-  top:50%;
-  left: 50%;
-  margin-top: -50px;
-  margin-left: -50px;
-}
-.layer1 .box{
+.layer1{
   /*top: 10px;
   left: 10px;*/
-  background-color: red;
+  background:url(images/layer01.png) 0 bottom no-repeat;
 }
-.layer2 .box{
+.layer2{
   /*top: 70px;
   left: 70px;*/
-  background-color: green;
+  background:url(images/layer02.png) 0 bottom no-repeat;
 }
-.layer3 .box{
+.layer3{
   /*top: 130px;
   left:130px;*/
-  background-color: blue;
+  background:url(images/layer03.png) 0 bottom no-repeat;
 }
-.layer4 .box{
+.layer4{
   /*top:190px;
   left:190px;*/
-  background-color: orange;
+  background:url(images/layer04.png) 0 bottom no-repeat;
 }
-.layer5 .box{
+.layer5{
   /*top:250px;
   left:250px;*/
-  background-color: white;
+  background:url(images/layer05.png) 0 bottom no-repeat;
 }
 .box.one{
   left: 0;
