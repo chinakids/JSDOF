@@ -55,12 +55,12 @@ factory = ($) ->
     updataCss : () ->
       self = @
       $(@cfg.mainDom).css
-        'width' : @W+50
-        'height': @H+30
+        'width' : @W+50 #增加偏移量
+        'height': @H+30 #增加偏移量
         'overflow':'hidden' #溢出裁剪
         'position':'relative'
-        'marginTop':'-15px'
-        'marginLeft':'-25px'
+        'marginTop':'-15px'  #增加偏移量
+        'marginLeft':'-25px'  #增加偏移量
 
       bgSize = () ->
         if self.W/self.H >= self.cfg.size
